@@ -136,6 +136,24 @@ firePot = {
     frame1: new Image(),
 }
 
+podium = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+
+    colider: {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+    },
+
+    sprite: null,
+    frame0: new Image(),
+    frame1: new Image(),
+}
+
 
 // load bg image
 const startImage = new Image();
@@ -193,6 +211,9 @@ function startGame() {
     firePot.frame0.src = "./assets/firePot/frame0.png";
     firePot.frame1.src = "./assets/firePot/frame1.png";
 
+    podium.frame0.src = "./assets/podium/frame0.png";
+    podium.frame1.src = "./assets/podium/frame1.png";
+
     setTimeout(() => {
         setupStage();
     }, 1000);
@@ -201,6 +222,8 @@ function startGame() {
 
 function setupStage() {
     gameOver = false;
+
+    offset = 0;
 
     // set player values
     player.sprite = player.walking0;
@@ -217,7 +240,7 @@ function setupStage() {
     fireRing.height = fireRing.sprite.height;
 
     fireRing.colider.x = fireRing.x;
-    fireRing.colider.y = fireRing.y+fireRing.sprite.height-25;
+    fireRing.colider.y = fireRing.y+fireRing.sprite.height-15;
     fireRing.colider.width = fireRing.width;
     fireRing.colider.height = canvas.height-fireRing.colider.y;
 
@@ -251,7 +274,7 @@ function setupStage() {
     firePot.height = firePot.sprite.height;
 
     firePot.colider.x = firePot.x;
-    firePot.colider.y = firePot.y+20;
+    firePot.colider.y = firePot.y+30;
     firePot.colider.width = firePot.width;
     firePot.colider.height = canvas.height-firePot.colider.y;
 
@@ -276,6 +299,17 @@ function setupStage() {
         };
         firePots.push(newFirePots); // Add the new fire ring to the fireRings array
     }
+
+    // set podium values
+    podium.sprite = podium.frame0;
+    podium.x = 800+(31 * 600);
+    podium.y = 0;
+    podium.width = podium.sprite.width;
+    podium.height = podium.sprite.height;
+    podium.colider.x = podium.x;
+    podium.colider.y = podium.y;
+    podium.colider.width = podium.width;
+    podium.colider.height = podium.height;
 
 
    drawSplashScreen("");
@@ -406,12 +440,15 @@ function update() {
 
     // update player jump speed
     if(player.isJumping){
+        state = 1;
         player.y -= player.jumpSpeed;
         player.jumpSpeed -= gravity;
         if(player.y >= ground){
             player.isJumping = false;
             player.y = ground;
         }
+    } else {
+        state = 0;
     }
 
     // update player sprite
@@ -476,6 +513,8 @@ function update() {
         fireObj.sprite = firePot.sprite;
     }
 
+    podium.x -= (player.dir*(player.speed));
+
     player.colider.x = player.x+25;
     player.colider.y = player.y;
     player.colider.width = player.width-50;
@@ -506,6 +545,13 @@ function update() {
         if(coliderCheck(player.colider, fireObj.colider)){
             gameOver = true;
         }
+    }
+
+    // check for collision with podium colider
+    podium.colider.x = podium.x+20;
+    podium.colider.width = podium.width-40;
+    if(coliderCheck(player.colider, podium.colider)){
+        gameOver = true;
     }
 }
 
@@ -559,6 +605,9 @@ function draw() {
         ctx.drawImage(fireObj.sprite, fireObj.x, fireObj.y);
     }
 
+    // Draw podium
+    ctx.drawImage(podium.sprite, podium.x, podium.y);
+
     // Draw score Text
     ctx.fillStyle = "white";
     ctx.font = "30px Arial";
@@ -567,6 +616,10 @@ function draw() {
 
     ctx.font = "40px Arial";
     ctx.fillText("Stage 1", 900, 85);
+
+    let distance = Math.floor(offset/10);
+    ctx.font = "40px Arial";
+    ctx.fillText("Distance " + distance, 225, 85);
 
 
 
@@ -591,22 +644,26 @@ function debugDraw() {
             ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
             ctx.fillRect(fireObj.colider.x, fireObj.colider.y, fireObj.colider.width, fireObj.colider.height);
         }
+
+        // Draw podium colider
+        ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+        ctx.fillRect(podium.colider.x, podium.colider.y, podium.colider.width, podium.colider.height);
         
         // draw player colider
         ctx.fillStyle = "rgba(0, 255, 0, 0.5)";   
         ctx.fillRect(player.colider.x, player.colider.y, player.colider.width, player.colider.height);
+
+
+        if(state === 0){
+            ctx.fillStyle = "green";
+        } else if(state === 1){
+            ctx.fillStyle = "blue";
+        } else if(state === 2){
+            ctx.fillStyle = "yellow";
+        } else if(state === 3){
+            ctx.fillStyle = "red";
+        }
+        ctx.fillRect(0, 0, 15, 15);
+
     }
-
-
-    if(state === 0){
-        ctx.fillStyle = "green";
-    } else if(state === 1){
-        ctx.fillStyle = "blue";
-    } else if(state === 2){
-        ctx.fillStyle = "yellow";
-    } else if(state === 3){
-        ctx.fillStyle = "red";
-    }
-    ctx.fillRect(0, 0, 15, 15);
-
 }
