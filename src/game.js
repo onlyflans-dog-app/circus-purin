@@ -98,6 +98,7 @@ player = {
     jumping0: new Image(),
     jumping1: new Image(),
     dead0: new Image(),
+    dead1: new Image(),
 }
 
 fireRing = {
@@ -204,6 +205,7 @@ function startGame() {
     player.jumping0.src = "./assets/player/jumping/frame0.png";
     player.jumping1.src = "./assets/player/jumping/frame1.png";
     player.dead0.src    = "./assets/player/dead/frame0.png";
+    player.dead1.src    = "./assets/player/dead/frame1.png";
 
     fireRing.frame0.src = "./assets/fireRing/frame0.png";
     fireRing.frame1.src = "./assets/fireRing/frame1.png";
@@ -224,6 +226,8 @@ function setupStage() {
     gameOver = false;
 
     offset = 0;
+
+    input();
 
     // set player values
     player.sprite = player.walking0;
@@ -334,6 +338,20 @@ function startScreenLoop() {
     }
 }
 
+function gameOverScreenLoop() {
+    // get input
+    input();
+
+    //drawSplashScreen("Press Space to Start");
+
+    // start game loop
+    setTimeout(() => {
+        setupStage();
+    //gameLoop();
+    }, 1500);
+
+}
+
 // main game loop
 function gameLoop() { 
     
@@ -351,7 +369,8 @@ function gameLoop() {
 
     // Repeat gameLoop function
     if(gameOver){
-        setupStage();
+        gameOverScreenLoop();
+        //setupStage();
     } else {
         requestAnimationFrame(gameLoop);
     }
@@ -432,13 +451,14 @@ function update() {
         }
     }
 
-    // update player jump
+    // make player jump
     if(keyEvt.pressedNow.up && !(player.isJumping)){
         player.isJumping = true;
         player.jumpSpeed = player.jumpForce;
+        player.sprite = player.jumping0;
     }
 
-    // update player jump speed
+    // ground player when jumping
     if(player.isJumping){
         state = 1;
         player.y -= player.jumpSpeed;
@@ -446,6 +466,7 @@ function update() {
         if(player.y >= ground){
             player.isJumping = false;
             player.y = ground;
+            player.sprite = player.walking0;
         }
     } else {
         state = 0;
@@ -453,28 +474,29 @@ function update() {
 
     // update player sprite
     if(frame%8 === 0){
-        if(!(player.isJumping)){
-            if(player.dir === 0){
-                player.frame = 0;
-                player.sprite = player.walking0;
-            } else {
-                if(player.frame === 0) {
-                    player.frame = 1;
-                    player.sprite = player.walking1;
-                } else {
-                    player.frame = 0;
-                    player.sprite = player.walking0;
-                }
-            }
-        } else {
-            if(player.frame === 0) {
-                player.frame = 1;
-                player.sprite = player.jumping1;
-            } else {
-                player.frame = 0;
-                player.sprite = player.jumping0;
-            }
-        }
+
+        // if(!(player.isJumping)){
+        //     if(player.dir === 0){
+        //         player.frame = 0;
+        //         player.sprite = player.walking0;
+        //     } else {
+        //         if(player.frame === 0) {
+        //             player.frame = 1;
+        //             player.sprite = player.walking1;
+        //         } else {
+        //             player.frame = 0;
+        //             player.sprite = player.walking0;
+        //         }
+        //     }
+        // } else {
+        //     if(player.frame === 0) {
+        //         player.frame = 1;
+        //         player.sprite = player.jumping1;
+        //     } else {
+        //         player.frame = 0;
+        //         player.sprite = player.jumping0;
+        //     }
+        // }
     } 
 
     // update player position
@@ -488,6 +510,24 @@ function update() {
 
     // update object animation
     if(frame%8 === 0){
+        if(player.sprite === player.dead0){
+            player.sprite = player.dead1;
+        } else if(player.sprite === player.dead1){
+            player.sprite = player.dead0;
+        }
+
+        if(player.sprite === player.walking0){
+            player.sprite = player.walking1;
+        } else if(player.sprite === player.walking1){
+            player.sprite = player.walking0;
+        }
+
+        if(player.sprite === player.jumping0){
+            player.sprite = player.jumping1;
+        } else if(player.sprite === player.jumping1){
+            player.sprite = player.jumping0;
+        }
+
         if(fireRing.sprite === fireRing.frame0){
             fireRing.sprite = fireRing.frame1;
         } else {
@@ -553,6 +593,14 @@ function update() {
     if(coliderCheck(player.colider, podium.colider)){
         gameOver = true;
     }
+
+    // if(debug){
+    //     gameOver = false;
+    // }
+
+    if(gameOver){
+        player.sprite = player.dead0;
+    }
 }
 
 function coliderCheck(obj1, obj2) {
@@ -615,11 +663,11 @@ function draw() {
     //ctx.fillText("Line 2", 225, 100);
 
     ctx.font = "40px Arial";
-    ctx.fillText("Stage 1", 900, 85);
+    ctx.fillText("Stage 1", 300, 85);
 
-    let distance = Math.floor(offset/10);
+    let distance = Math.floor(offset/25);
     ctx.font = "40px Arial";
-    ctx.fillText("Distance " + distance, 225, 85);
+    ctx.fillText("Distance " + distance, 800, 85);
 
 
 
